@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const sidebar = document.getElementById('sidebar');
   const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
   const mobileToggleBtn = document.getElementById('mobile-toggle-btn');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
   const activeTabTitle = document.getElementById('active-tab-title');
 
   // KPI elements
@@ -46,10 +47,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Mobile Navigation Toggle
+  const closeMobileSidebar = () => {
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+  };
+
   if (mobileToggleBtn && sidebar) {
     mobileToggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('mobile-open');
+      const isOpen = sidebar.classList.toggle('mobile-open');
+      if (sidebarBackdrop) {
+        sidebarBackdrop.classList.toggle('active', isOpen);
+      }
     });
+  }
+
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', closeMobileSidebar);
   }
 
   // Tab Switching Logic
@@ -75,8 +88,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       // Auto close sidebar on mobile after selection
-      if (window.innerWidth <= 768 && sidebar) {
-        sidebar.classList.remove('mobile-open');
+      if (window.innerWidth <= 768) {
+        closeMobileSidebar();
       }
     });
   });
