@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SirenSync - Emergency Fleet Assignment & Coverage Command Center</title>
+  <meta name="description" content="AI-01 Emergency Fleet Dispatch System with dynamic coverage preservation and multi-dispatcher comparison.">
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js for visual reports -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <!-- CSS Design System -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Collapsible Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <img src="images/logo.png" alt="SirenSync Logo" class="brand-logo">
+        </div>
+        <button id="sidebar-toggle-btn" class="sidebar-toggle" title="Toggle Sidebar">
+          <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
+        </button>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="tab-btn active" data-tab="command-center" data-title="Live Grid Simulator" title="Live Grid Simulator">
+          <span class="tab-text">Live Grid Simulator</span>
+        </button>
+        <button class="tab-btn" data-tab="comparison" data-title="Dispatcher Comparison" title="Dispatcher Comparison">
+          <span class="tab-text">Dispatcher Comparison</span>
+        </button>
+        <button class="tab-btn" data-tab="analytics" data-title="Multi-Seed Robustness Evaluation" title="Multi-Seed Robustness">
+          <span class="tab-text">Multi-Seed Robustness</span>
+        </button>
+        <button class="tab-btn" data-tab="audit" data-title="Causality & Compliance Audit" title="Causality & Audit">
+          <span class="tab-text">Causality & Audit</span>
+        </button>
+      </nav>
+
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <button id="mobile-toggle-btn" class="mobile-toggle" title="Open Navigation">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="page-header-info">
+            <h2 id="active-tab-title">Live Grid Simulator</h2>
+            <span class="page-subtitle">Real-time Coverage Preservation & Dispatch Operations</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content Panels -->
+      <main class="content-body">
+        
+        <!-- TAB 1: LIVE GRID SIMULATOR -->
+        <section id="command-center" class="tab-panel active">
+          <div class="grid-layout">
+            
+            <!-- Left Control & Simulation Canvas Panel -->
+            <div class="canvas-card card glass-panel">
+              <div class="card-header">
+                <div class="header-title">
+                  <i class="fa-solid fa-earth-americas"></i> 100x100 Grid Simulation Viewer
+                </div>
+                <div class="dispatcher-selector-group">
+                  <label for="sim-dispatcher-select">Dispatcher Policy:</label>
+                  <select id="sim-dispatcher-select" class="custom-select">
+                    <option value="siren_sync" selected>SirenSync (Reserve-Threshold)</option>
+                    <option value="baseline">Baseline (Naive Nearest)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Canvas Grid Container -->
+              <div class="canvas-viewport">
+                <canvas id="grid-canvas" width="600" height="600"></canvas>
+                
+                <!-- Canvas Legend Overlay -->
+                <div class="canvas-legend">
+                  <div class="legend-item"><span class="dot idle-vehicle"></span> Vehicle Idle</div>
+                  <div class="legend-item"><span class="dot busy-vehicle"></span> Vehicle Busy</div>
+                  <div class="legend-item"><span class="dot p1-incident"></span> Priority 1 (Yellow)</div>
+                  <div class="legend-item"><span class="dot p2-incident"></span> Priority 2 (Orange)</div>
+                  <div class="legend-item"><span class="dot p3-incident"></span> Priority 3 (Red Siren)</div>
+                  <div class="legend-item"><span class="quadrant-badge-outage"></span> Outage Zone</div>
+                </div>
+              </div>
+
+              <!-- Playback Control Toolbar -->
+              <div class="playback-controls">
+                <div class="playback-buttons">
+                  <button id="btn-reset" class="ctrl-btn" title="Reset Simulation"><i class="fa-solid fa-rotate-left"></i></button>
+                  <button id="btn-step-prev" class="ctrl-btn" title="Step Back"><i class="fa-solid fa-backward-step"></i></button>
+                  <button id="btn-play-pause" class="ctrl-btn primary-ctrl" title="Play/Pause"><i class="fa-solid fa-play"></i></button>
+                  <button id="btn-step-next" class="ctrl-btn" title="Step Forward"><i class="fa-solid fa-forward-step"></i></button>
+                </div>
+
+                <div class="scrubber-container">
+                  <span class="scrubber-label">Minute <strong id="current-minute-txt">0</strong> / 120</span>
+                  <input type="range" id="timeline-slider" min="0" max="120" value="0" class="custom-slider">
+                </div>
+
+                <div class="speed-selector">
+                  <button class="speed-btn" data-speed="0.5">0.5x</button>
+                  <button class="speed-btn active" data-speed="1">1x</button>
+                  <button class="speed-btn" data-speed="2">2x</button>
+                  <button class="speed-btn" data-speed="5">5x</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Sidebar KPI & Quadrant Health -->
+            <div class="sidebar-panels">
+              
+              <!-- Live KPI Counter Grid -->
+              <div class="kpi-grid">
+                <div class="kpi-card accent-blue">
+                  <div class="kpi-icon"><i class="fa-solid fa-clock"></i></div>
+                  <div class="kpi-data">
+                    <span class="kpi-value" id="kpi-weighted-rt">--</span>
+                    <span class="kpi-label">Weighted Response Time</span>
+                  </div>
+                </div>
+
+                <div class="kpi-card accent-crimson">
+                  <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                  <div class="kpi-data">
+                    <span class="kpi-value" id="kpi-outage-mins">--</span>
+                    <span class="kpi-label">Coverage Outage Mins</span>
+                  </div>
+                </div>
+
+                <div class="kpi-card accent-emerald">
+                  <div class="kpi-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                  <div class="kpi-data">
+                    <span class="kpi-value" id="kpi-p3-rt">--</span>
+                    <span class="kpi-label">Priority 3 Emergency RT</span>
+                  </div>
+                </div>
+
+                <div class="kpi-card accent-amber">
+                  <div class="kpi-icon"><i class="fa-solid fa-circle-question"></i></div>
+                  <div class="kpi-data">
+                    <span class="kpi-value" id="kpi-unassigned">--</span>
+                    <span class="kpi-label">Unassigned Incidents</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quadrant Coverage Live Monitor -->
+              <div class="card glass-panel quadrant-monitor-card">
+                <div class="card-header">
+                  <div class="header-title">
+                    <i class="fa-solid fa-border-all"></i> Quadrant Coverage Status
+                  </div>
+                  <span class="live-pill">LIVE MONITOR</span>
+                </div>
+
+                <div class="quadrant-grid">
+                  <div class="quadrant-box" id="q-box-0">
+                    <div class="quad-header">
+                      <span class="quad-title">Q0 (Top-Left)</span>
+                      <span class="quad-badge" id="q-status-0">HEALTHY</span>
+                    </div>
+                    <div class="quad-stats">
+                      <span>Idle Vehicles: <strong id="q-vehicles-0">0</strong></span>
+                    </div>
+                  </div>
+
+                  <div class="quadrant-box" id="q-box-1">
+                    <div class="quad-header">
+                      <span class="quad-title">Q1 (Top-Right)</span>
+                      <span class="quad-badge" id="q-status-1">HEALTHY</span>
+                    </div>
+                    <div class="quad-stats">
+                      <span>Idle Vehicles: <strong id="q-vehicles-1">0</strong></span>
+                    </div>
+                  </div>
+
+                  <div class="quadrant-box" id="q-box-2">
+                    <div class="quad-header">
+                      <span class="quad-title">Q2 (Bottom-Left)</span>
+                      <span class="quad-badge" id="q-status-2">HEALTHY</span>
+                    </div>
+                    <div class="quad-stats">
+                      <span>Idle Vehicles: <strong id="q-vehicles-2">0</strong></span>
+                    </div>
+                  </div>
+
+                  <div class="quadrant-box" id="q-box-3">
+                    <div class="quad-header">
+                      <span class="quad-title">Q3 (Bottom-Right)</span>
+                      <span class="quad-badge" id="q-status-3">HEALTHY</span>
+                    </div>
+                    <div class="quad-stats">
+                      <span>Idle Vehicles: <strong id="q-vehicles-3">0</strong></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Dispatch Feed -->
+              <div class="card glass-panel feed-card">
+                <div class="card-header">
+                  <div class="header-title">
+                    <i class="fa-solid fa-list-check"></i> Dispatch Feed
+                  </div>
+                </div>
+                <div class="feed-list" id="dispatch-feed">
+                  <!-- Live dispatches dynamically inserted -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: DISPATCHER COMPARISON -->
+        <section id="comparison" class="tab-panel">
+          <div class="comparison-container">
+            <div class="section-title">
+              <h2>Baseline (Naive Nearest) vs SirenSync (Reserve-Threshold)</h2>
+              <p>Direct comparison of performance metrics for SEED 20260911</p>
+            </div>
+
+            <div class="comparison-cards-grid">
+              <!-- Metric 1: Coverage Outages -->
+              <div class="comp-card hero-card">
+                <div class="comp-header">
+                  <h3>Coverage Outage Minutes</h3>
+                  <p>Total quadrant-minutes with zero idle vehicles</p>
+                </div>
+                <div class="comp-values">
+                  <div class="val-box baseline">
+                    <span class="val-title">Baseline</span>
+                    <span class="val-num" id="comp-base-outages">--</span>
+                    <span class="val-unit">minutes</span>
+                  </div>
+                  <div class="comp-vs">VS</div>
+                  <div class="val-box sirensync">
+                    <span class="val-title">SirenSync</span>
+                    <span class="val-num" id="comp-siren-outages">--</span>
+                    <span class="val-unit">minutes</span>
+                  </div>
+                </div>
+                <div class="comp-result" id="comp-result-outages">
+                  <!-- Highlight reduction percentage -->
+                </div>
+              </div>
+
+              <!-- Metric 2: Priority-Weighted Response Time -->
+              <div class="comp-card">
+                <div class="comp-header">
+                  <h3>Weighted Response Time</h3>
+                  <p>Prioritizes Priority 3 (w=7) over Priority 1 (w=1)</p>
+                </div>
+                <div class="comp-values">
+                  <div class="val-box baseline">
+                    <span class="val-title">Baseline</span>
+                    <span class="val-num" id="comp-base-wrt">--</span>
+                    <span class="val-unit">mins</span>
+                  </div>
+                  <div class="comp-vs">VS</div>
+                  <div class="val-box sirensync">
+                    <span class="val-title">SirenSync</span>
+                    <span class="val-num" id="comp-siren-wrt">--</span>
+                    <span class="val-unit">mins</span>
+                  </div>
+                </div>
+                <div class="comp-result" id="comp-result-wrt">
+                  <!-- Highlight improvement -->
+                </div>
+              </div>
+
+              <!-- Metric 3: Priority 3 Emergency Response -->
+              <div class="comp-card">
+                <div class="comp-header">
+                  <h3>Priority-3 Response Time</h3>
+                  <p>Average response time for life-threatening emergencies</p>
+                </div>
+                <div class="comp-values">
+                  <div class="val-box baseline">
+                    <span class="val-title">Baseline</span>
+                    <span class="val-num" id="comp-base-p3">--</span>
+                    <span class="val-unit">mins</span>
+                  </div>
+                  <div class="comp-vs">VS</div>
+                  <div class="val-box sirensync">
+                    <span class="val-title">SirenSync</span>
+                    <span class="val-num" id="comp-siren-p3">--</span>
+                    <span class="val-unit">mins</span>
+                  </div>
+                </div>
+                <div class="comp-result" id="comp-result-p3">
+                  <!-- Highlight equality/fast path -->
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Comparative Static Visualization Artifacts -->
+            <div class="artifacts-preview card glass-panel">
+              <div class="card-header">
+                <div class="header-title"><i class="fa-solid fa-image"></i> Simulation Snapshot & Visual Artifacts</div>
+              </div>
+              <div class="artifacts-grid">
+                <div class="artifact-box">
+                  <h4>Grid State Snapshot</h4>
+                  <canvas id="snapshot-canvas" width="400" height="300" style="width:100%;border-radius:8px;background:#f1f5f9;"></canvas>
+                </div>
+                <div class="artifact-box">
+                  <h4>Comparison Chart Report</h4>
+                  <canvas id="comparison-chart-canvas" style="width:100%;border-radius:8px;background:#f1f5f9;"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- TAB 3: MULTI-SEED ROBUSTNESS -->
+        <section id="analytics" class="tab-panel">
+          <div class="analytics-container">
+            <div class="section-title">
+              <h2>Multi-Seed Robustness Evaluation (15 Random Seeds)</h2>
+              <p>Proving algorithm generalization across varied initial fleet & incident spatial distributions</p>
+            </div>
+
+            <!-- Multi-Seed Summary KPI Banner -->
+            <div class="seed-summary-banner">
+              <div class="seed-summary-card">
+                <span class="banner-title">Average Outage Minutes Reduction</span>
+                <span class="banner-value positive" id="avg-outage-reduction">--%</span>
+                <span class="banner-desc">SirenSync vs Baseline across 15 seeds</span>
+              </div>
+              <div class="seed-summary-card">
+                <span class="banner-title">Mean Weighted Response Time</span>
+                <span class="banner-value" id="mean-weighted-response">-- mins</span>
+                <span class="banner-desc">Standard Deviation: ±<span id="std-weighted-response">--</span></span>
+              </div>
+              <div class="seed-summary-card">
+                <span class="banner-title">P3 Priority Dispatch Consistency</span>
+                <span class="banner-value positive">100% Guaranteed</span>
+                <span class="banner-desc">Fast-path zero reserve check for Priority 3</span>
+              </div>
+            </div>
+
+            <!-- Seed Benchmark Data Table -->
+            <div class="card glass-panel seed-table-card">
+              <div class="card-header">
+                <div class="header-title"><i class="fa-solid fa-table"></i> Seed Benchmark Results (15 Seeds)</div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" id="multi-seed-table">
+                  <thead>
+                    <tr>
+                      <th>Seed ID</th>
+                      <th>Baseline Outages (mins)</th>
+                      <th>SirenSync Outages (mins)</th>
+                      <th>Outage Reduction</th>
+                      <th>Baseline Weighted RT</th>
+                      <th>SirenSync Weighted RT</th>
+                      <th>P3 RT (mins)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="multi-seed-tbody">
+                    <!-- Data dynamically generated -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 4: CAUSALITY & AUDIT -->
+        <section id="audit" class="tab-panel">
+          <div class="audit-container">
+            <div class="section-title">
+              <h2>Online Rules &amp; Temporal Causality Audit</h2>
+              <p>Real-time validation of all 100 incidents — updates live as simulation plays</p>
+            </div>
+            <div class="audit-banner-grid">
+              <div class="audit-card pass">
+                <div class="audit-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="audit-info">
+                  <h3>Temporal Causality Rule</h3>
+                  <p>No dispatch assignment occurs prior to incident arrival (arrival_time &le; assigned_time).</p>
+                  <span class="audit-status-badge">PASS (0 Violations)</span>
+                </div>
+              </div>
+              <div class="audit-card pass">
+                <div class="audit-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="audit-info">
+                  <h3>Vehicle Double-Booking Check</h3>
+                  <p>No vehicle is dispatched to multiple incidents during its busy duration period.</p>
+                  <span class="audit-status-badge">PASS (0 Violations)</span>
+                </div>
+              </div>
+            </div>
+            <div class="audit-live-bar">
+              <div class="audit-counter"><span class="counter-label">Pending</span><span class="counter-val" id="cnt-pending">--</span></div>
+              <div class="audit-counter enroute"><span class="counter-label">En Route</span><span class="counter-val" id="cnt-enroute">--</span></div>
+              <div class="audit-counter resolved"><span class="counter-label">Resolved</span><span class="counter-val" id="cnt-resolved">--</span></div>
+              <div class="audit-counter unassigned-ctr"><span class="counter-label">Unassigned</span><span class="counter-val" id="cnt-unassigned-audit">--</span></div>
+              <div class="audit-minute-badge">Simulation Time: Min <strong id="audit-current-min">0</strong></div>
+            </div>
+            <div class="audit-filter-bar">
+              <input type="text" id="audit-search" placeholder="Search by Incident ID or Vehicle..." autocomplete="off">
+              <select id="audit-priority-filter">
+                <option value="">All Priorities</option>
+                <option value="3">Priority 3 (Critical)</option>
+                <option value="2">Priority 2 (High)</option>
+                <option value="1">Priority 1 (Normal)</option>
+              </select>
+              <select id="audit-status-filter">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="enroute">En Route</option>
+                <option value="resolved">Resolved</option>
+                <option value="unassigned">Unassigned</option>
+              </select>
+              <span class="audit-total-count">Showing <strong id="audit-shown-count">0</strong> / 100 incidents</span>
+            </div>
+            <div class="card glass-panel audit-log-card">
+              <div class="card-header">
+                <div class="header-title"><i class="fa-solid fa-clipboard-check"></i> Incident Verification Log — All 100 Incidents (Real-Time)</div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table" id="audit-table">
+                  <thead>
+                    <tr>
+                      <th>Incident</th><th>Priority</th><th>Arrival</th><th>Assigned</th>
+                      <th>Vehicle</th><th>Travel Time</th><th>Causality</th><th>Live Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="audit-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        </section>
+
+      </main>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>SirenSync &copy; 2026 — AI-01 Emergency Fleet Assignment System. Premium Light Theme Edition.</p>
+      </footer>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/simulator.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

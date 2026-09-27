@@ -1,0 +1,15 @@
+{
+    "seed": 99990007,
+    "sirensync": {
+        "priority_weighted_response_time": 13.94,
+        "coverage_outage_minutes": 352,
+        "priority_3_response_time": 13.84,
+        "unassigned_count": 0
+    },
+    "baseline": {
+        "priority_weighted_response_time": 13.8,
+        "coverage_outage_minutes": 361,
+        "priority_3_response_time": 14.69,
+        "unassigned_count": 0
+    }
+}
